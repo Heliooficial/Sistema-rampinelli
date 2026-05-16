@@ -79,7 +79,7 @@ document.getElementById('btnPrint').addEventListener('click', async function() {
     const qtd_pallets = document.getElementById('qtd_pallets').value;
     const qtd_chapas = document.getElementById('qtd_chapas').value;
     const motorista = document.getElementById('motorista').value.trim();
-    const cpf = document.getElementById('cpf').value.trim();
+    const cpf = document.getElementById('cpf').value.trim(); // <--- CORRIGIDO AQUI!
 
     // Validação obrigatória de todos os campos
     if(!numTermo || !ordem || !cliente || !cidade || !qtd_pallets || !qtd_chapas || !motorista || !cpf) {
