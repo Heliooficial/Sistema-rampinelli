@@ -9,41 +9,40 @@ let clienteNovo = false;
 let motoristaNovo = false;
 
 // ==========================================================================
-// 1. CARREGA OS DADOS DA PLANILHA VIA FETCH MODERNO (RESISTENTE A ERROS)
+// 1. CARREGA OS DADOS DA PLANILHA VIA JSONP (BULA O BLOQUEIO DE CORS)
 // ==========================================================================
-async function carregarDadosIniciais() {
-    const campoTermo = document.getElementById('num_termo');
-    
-    try {
-        // Faz a requisição moderna direto para o link do Google Apps Script com a ação correta
-        const resposta = await fetch(`${WEB_APP_URL}?action=dadosIniciais`);
+
+// Função global que o Google vai chamar de volta entregando os dados
+window.processarDadosIniciais = function(dados) {
+    if (dados) {
+        bancoClientes = dados.clientes || [];
+        bancoMotoristas = dados.motoristas || [];
         
-        if (!resposta.ok) {
-            throw new Error(`Erro do servidor Google: ${resposta.status}`);
+        const campoTermo = document.getElementById('num_termo');
+        if (campoTermo && dados.proximoTermo) {
+            campoTermo.value = dados.proximoTermo;
+            campoTermo.placeholder = ""; 
         }
+        console.log("Dados carregados com sucesso via JSONP!");
+    }
+};
 
-        const dados = await resposta.json();
-
-        if (dados) {
-            bancoClientes = dados.clientes || [];
-            bancoMotoristas = dados.motoristas || [];
-            
-            // Insere o número do próximo termo (ex: 2026-276) na tela
-            if (campoTermo && dados.proximoTermo) {
-                campoTermo.value = dados.proximoTermo;
-                campoTermo.placeholder = ""; 
-            }
-            console.log("Dados carregados com sucesso da planilha!");
-        }
-
-    } catch (erro) {
-        console.error("Erro detalhado ao conectar:", erro);
+function carregarDadosIniciais() {
+    // Criamos uma chamada de script dinâmica que o navegador não bloqueia por CORS
+    const script = document.createElement('script');
+    script.src = `${WEB_APP_URL}?action=dadosIniciais&callback=processarDadosIniciais`;
+    
+    script.onerror = function() {
+        console.error("Erro ao conectar com a planilha.");
         alert("⚠️ Não foi possível carregar os dados automaticamente. Mas o campo foi liberado para você digitar o número manualmente!");
+        const campoTermo = document.getElementById('num_termo');
         if (campoTermo) {
-            campoTermo.value = ""; // Libera o campo para digitação caso o Google falhe
+            campoTermo.value = "";
             campoTermo.placeholder = "Ex: 2026-276";
         }
-    }
+    };
+
+    document.body.appendChild(script);
 }
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -54,7 +53,7 @@ window.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem('termoImpresso');
     }
 
-    // Dispara a carga dos dados assim que a tela abre
+    // Dispara o carregamento dos dados
     carregarDadosIniciais();
 });
 
