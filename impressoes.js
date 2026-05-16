@@ -86,7 +86,7 @@ function buscarMotorista() {
 // 4. ENVIA OS DADOS PARA A PLANILHA E DISPARA A IMPRESSÃO
 // ==========================================================================
 document.getElementById('btnPrint').addEventListener('click', async function() {
-    const numTermo = document.getElementById('num_termo').value;
+    const numTermo = document.getElementById('num_termo').value.trim(); // Mantém o formato text/hífen
     const ordem = document.getElementById('ordem').value.trim();
     const cnpj = document.getElementById('cliente_cnpj').value.trim();
     const cliente = document.getElementById('cliente').value.trim();
@@ -103,9 +103,10 @@ document.getElementById('btnPrint').addEventListener('click', async function() {
 
     const cnpjFinal = cnpj || "Não Informado";
 
+    // Envia o termo atual para o Google saber como fatiar e somar o próximo
     const dadosParaSalvar = {
         action: "salvarEAtualizar",
-        novoNumeroTermo: Number(numTermo) + 1, 
+        termoAtual: numTermo, 
         novoCliente: clienteNovo,
         clienteCnpj: cnpjFinal,
         clienteNome: cliente,
@@ -118,7 +119,7 @@ document.getElementById('btnPrint').addEventListener('click', async function() {
     try {
         localStorage.setItem('termoImpresso', numTermo);
 
-        // Envia os dados no modo 'no-cors' para garantir o salvamento sem travas do navegador
+        // Envia para o Sheets
         fetch(WEB_APP_URL, {
             method: 'POST',
             mode: 'no-cors', 
