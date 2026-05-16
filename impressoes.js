@@ -9,45 +9,40 @@ let clienteNovo = false;
 let motoristaNovo = false;
 
 // ==========================================================================
-// 1. CARREGA OS DADOS DA PLANILHA ASSIM QUE ABRE A TELA
+// 1. CARREGA OS DADOS DA PLANILHA VIA JSONP (BULA O BLOQUEIO DE CORS)
 // ==========================================================================
+
+// Função global que o Google vai chamar de volta entregando os dados
+window.processarDadosIniciais = function(dados) {
+    bancoClientes = dados.clientes || [];
+    bancoMotoristas = dados.motoristas || [];
+    
+    const campoTermo = document.getElementById('num_termo');
+    if (campoTermo) {
+        campoTermo.value = dados.proximoTermo;
+        campoTermo.placeholder = ""; 
+    }
+    console.log("Dados carregados com sucesso via JSONP!");
+};
+
 window.addEventListener('DOMContentLoaded', () => {
     // Alerta de confirmação após o recarregamento da página
     if (localStorage.getItem('termoImpresso')) {
         const ultimoTermo = localStorage.getItem('termoImpresso');
-        alert(`✅ Termo nº ${ultimoTermo} gerado com sucesso!\nA planilha foi atualizada e o sistema já preparou o próximo número.`);
+        alert(`✅ Termo nº ${ultimoTermo} gerado com sucesso!\nA planilha foi updated e o sistema já preparou o próximo número.`);
         localStorage.removeItem('termoImpresso');
     }
 
-    // Requisição otimizada para evitar bloqueios de segurança do GitHub Pages
-    fetch(`${WEB_APP_URL}?action=dadosIniciais`, {
-        method: 'GET',
-        mode: 'cors',
-        redirect: 'follow'
-    })
-    .then(resposta => {
-        if (!resposta.ok) throw new Error('Erro na resposta do servidor.');
-        return resposta.json();
-    })
-    .then(dados => {
-        bancoClientes = dados.clientes || [];
-        bancoMotoristas = dados.motoristas || [];
-        
-        const campoTermo = document.getElementById('num_termo');
-        if (campoTermo) {
-            campoTermo.value = dados.proximoTermo;
-            campoTermo.placeholder = ""; 
-        }
-        console.log("Dados carregados com sucesso!");
-    })
-    .catch(erro => {
-        console.error("Erro ao conectar:", erro);
-        // Se o CORS bloquear o GET inicial, tentamos uma rota alternativa ou liberamos os campos
-        const campoTermo = document.getElementById('num_termo');
-        if (campoTermo && campoTermo.value === "") {
-            campoTermo.placeholder = "Digite o número do termo";
-        }
-    });
+    // Criamos uma chamada de script dinâmica que o navegador não bloqueia por CORS
+    const script = document.createElement('script');
+    script.src = `${WEB_APP_URL}?action=dadosIniciais&callback=processarDadosIniciais`;
+    
+    script.onerror = function() {
+        console.error("Erro ao conectar com a planilha.");
+        alert("Não foi possível carregar os dados automaticamente. Verifique se a planilha e o Apps Script estão publicados.");
+    };
+
+    document.body.appendChild(script);
 });
 
 // ==========================================================================
