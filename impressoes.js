@@ -9,22 +9,37 @@ let clienteNovo = false;
 let motoristaNovo = false;
 
 // ==========================================================================
-// 1. CARREGA OS DADOS DA PLANILHA ASSIM QUE ABRE A TELA
+// 1. CARREGA OS DADOS DA PLANILHA ASSIM QUE ABRE A TELA (CORRIGIDO PARA CORS)
 // ==========================================================================
-window.addEventListener('DOMContentLoaded', async () => {
-    try {
-        const resposta = await fetch(`${WEB_APP_URL}?action=dadosIniciais`);
-        const dados = await resposta.json();
-        
-        bancoClientes = dados.clientes;
-        bancoMotoristas = dados.motoristas;
+window.addEventListener('DOMContentLoaded', () => {
+    fetch(`${WEB_APP_URL}?action=dadosIniciais`, {
+        method: 'GET',
+        mode: 'cors',
+        redirect: 'follow',
+        headers: {
+            'Content-Type': 'text/plain;charset=utf-8'
+        }
+    })
+    .then(resposta => {
+        if (!resposta.ok) throw new Error('Erro na resposta do servidor Google.');
+        return resposta.json();
+    })
+    .then(dados => {
+        bancoClientes = dados.clientes || [];
+        bancoMotoristas = dados.motoristas || [];
         
         // Preenche o campo do próximo número do termo vindo da planilha automaticamente
-        document.getElementById('num_termo').value = dados.proximoTermo;
-    } catch (erro) {
+        const campoTermo = document.getElementById('num_termo');
+        if (campoTermo) {
+            campoTermo.value = dados.proximoTermo;
+            campoTermo.placeholder = ""; 
+        }
+        console.log("Dados da Rampinelli carregados com sucesso!");
+    })
+    .catch(erro => {
         console.error("Erro ao conectar com a planilha:", erro);
-        alert("Não foi possível carregar os dados da planilha de clientes/termos.");
-    }
+        alert("Não foi possível carregar os dados da planilha de clientes/termos automáticamente. Verifique a URL do Apps Script.");
+    });
 });
 
 // ==========================================================================
@@ -34,15 +49,15 @@ function buscarCliente() {
     const cnpjDigitado = document.getElementById('cliente_cnpj').value.trim();
     if (!cnpjDigitado) return;
 
-    // Procura na tabela (ignorando a primeira linha de cabeçalho)
-    const encontrado = bancoClientes.find(linha => linha[0].toString() == cnpjDigitado);
+    // Procura na tabela ignorando letras maiúsculas/minúsculas
+    const encontrado = bancoClientes.find(linha => linha[0].toString().trim() === cnpjDigitado);
 
     if (encontrado) {
         document.getElementById('cliente').value = encontrado[1];
         document.getElementById('cidade').value = encontrado[2];
         clienteNovo = false;
+        console.log("Cliente encontrado no banco.");
     } else {
-        // Se não achar, deixa o usuário digitar para cadastrar um novo
         clienteNovo = true;
         console.log("Cliente novo detectado. Será salvo ao imprimir.");
     }
@@ -55,11 +70,12 @@ function buscarMotorista() {
     const cpfDigitado = document.getElementById('cpf').value.trim();
     if (!cpfDigitado) return;
 
-    const encontrado = bancoMotoristas.find(linha => linha[0].toString() == cpfDigitado);
+    const encontrado = bancoMotoristas.find(linha => linha[0].toString().trim() === cpfDigitado);
 
     if (encontrado) {
         document.getElementById('motorista').value = encontrado[1];
         motoristaNovo = false;
+        console.log("Motorista encontrado no banco.");
     } else {
         motoristaNovo = true;
         console.log("Motorista novo detectado. Será salvo ao imprimir.");
@@ -70,7 +86,7 @@ function buscarMotorista() {
 // 4. ENVIA OS DADOS PARA A PLANILHA E DISPARA A IMPRESSÃO
 // ==========================================================================
 document.getElementById('btnPrint').addEventListener('click', async function() {
-    // Coleta todos os valores da tela (incluindo os novos campos)
+    // Coleta todos os valores da tela garantindo os IDs exatos do HTML
     const numTermo = document.getElementById('num_termo').value;
     const ordem = document.getElementById('ordem').value.trim();
     const cnpj = document.getElementById('cliente_cnpj').value.trim();
@@ -79,20 +95,26 @@ document.getElementById('btnPrint').addEventListener('click', async function() {
     const qtd_pallets = document.getElementById('qtd_pallets').value;
     const qtd_chapas = document.getElementById('qtd_chapas').value;
     const motorista = document.getElementById('motorista').value.trim();
-    const cpf = document.getElementById('cpf').value.trim(); // <--- CORRIGIDO AQUI!
+    const cpf = document.getElementById('cpf').value.trim();
 
-    // Validação obrigatória de todos os campos
+    // Mostra no F12 o que o JavaScript está enxergando para ajudar no diagnóstico
+    console.log("Valores coletados para envio:", { numTermo, ordem, cliente, cidade, qtd_pallets, qtd_chapas, motorista, cpf });
+
+    // Validação obrigatória de todos os campos essenciais (CNPJ opcional para o termo não travar se não tiver)
     if(!numTermo || !ordem || !cliente || !cidade || !qtd_pallets || !qtd_chapas || !motorista || !cpf) {
-        alert("Por favor, preencha todos os campos do formulário antes de gerar o PDF.");
+        alert("Por favor, preencha todos os campos obrigatórios do formulário antes de gerar o PDF.");
         return;
     }
 
-    // Prepara o pacote de dados para salvar na planilha em segundo plano
+    // Se o usuário digitou o nome do cliente mas deixou o CNPJ em branco, define um padrão
+    const cnpjFinal = cnpj || "Não Informado";
+
+    // Prepara o pacote de dados para salvar na planilha
     const dadosParaSalvar = {
         action: "salvarEAtualizar",
-        novoNumeroTermo: Number(numTermo) + 1, // Soma +1 para o próximo termo da planilha
+        novoNumeroTermo: Number(numTermo) + 1, 
         novoCliente: clienteNovo,
-        clienteCnpj: cnpj,
+        clienteCnpj: cnpjFinal,
         clienteNome: cliente,
         clienteCidade: cidade,
         novoMotorista: motoristaNovo,
@@ -101,7 +123,7 @@ document.getElementById('btnPrint').addEventListener('click', async function() {
     };
 
     try {
-        // Envia as atualizações para o Google Sheets via Apps Script
+        // Envia as atualizações para o Google Sheets via POST
         fetch(WEB_APP_URL, {
             method: 'POST',
             mode: 'no-cors', 
@@ -111,7 +133,7 @@ document.getElementById('btnPrint').addEventListener('click', async function() {
 
         const dataAtual = new Date().toLocaleDateString('pt-BR');
 
-        // Função molde com os seus dados originais da Rampinelli Caruaru + Número do Termo
+        // Função molde com os dados da Rampinelli
         function gerarLayoutDocumento(nomeVia) {
             return `
                 <div class="recibo-header">
@@ -141,20 +163,21 @@ document.getElementById('btnPrint').addEventListener('click', async function() {
             `;
         }
 
-        // Insere as duas vias idênticas na tela oculta de impressão
+        // Insere as duas vias na tela oculta de impressão
         const printArea = document.getElementById('print-area');
         printArea.innerHTML = `
             <div class="recibo-via primeira-via">${gerarLayoutDocumento('1ª Via - Empresa')}</div>
             <div class="recibo-via segunda-via">${gerarLayoutDocumento('2ª Via - Motorista')}</div>
         `;
 
-        // Dispara a janela de impressão e logo após recarrega para atualizar o número na tela
+        // Dispara a janela de impressão e recarrega a página
         setTimeout(function() {
             window.print();
             window.location.reload();
         }, 300);
 
     } catch (erro) {
+        console.error("Erro no processo de salvamento:", erro);
         alert("Erro ao salvar os dados na planilha. A impressão continuará, mas verifique os dados salvos.");
     }
 });
