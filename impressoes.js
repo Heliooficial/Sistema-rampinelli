@@ -43,13 +43,12 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // ==========================================================================
-// 2. BUSCA AUTOMÁTICA DE CLIENTE PELO CNPJ/CPF
+// 2. BUSCA AUTOMÁTICA DE CLIENTE PELO CNPJ/CPF (COM ALERTA)
 // ==========================================================================
 function buscarCliente() {
     const cnpjDigitado = document.getElementById('cliente_cnpj').value.trim();
     if (!cnpjDigitado) return;
 
-    // Procura na tabela ignorando letras maiúsculas/minúsculas
     const encontrado = bancoClientes.find(linha => linha[0].toString().trim() === cnpjDigitado);
 
     if (encontrado) {
@@ -59,12 +58,13 @@ function buscarCliente() {
         console.log("Cliente encontrado no banco.");
     } else {
         clienteNovo = true;
-        console.log("Cliente novo detectado. Será salvo ao imprimir.");
+        // ALERTA ADICIONADO:
+        alert("⚠️ CNPJ/CPF não encontrado! Este é um CLIENTE NOVO e será cadastrado automaticamente na planilha ao imprimir.");
     }
 }
 
 // ==========================================================================
-// 3. BUSCA AUTOMÁTICA DE MOTORISTA PELO CPF
+// 3. BUSCA AUTOMÁTICA DE MOTORISTA PELO CPF (COM ALERTA)
 // ==========================================================================
 function buscarMotorista() {
     const cpfDigitado = document.getElementById('cpf').value.trim();
@@ -78,7 +78,8 @@ function buscarMotorista() {
         console.log("Motorista encontrado no banco.");
     } else {
         motoristaNovo = true;
-        console.log("Motorista novo detectado. Será salvo ao imprimir.");
+        // ALERTA ADICIONADO:
+        alert("⚠️ CPF não encontrado! Este é um MOTORISTA NOVO e será cadastrado automaticamente na planilha ao imprimir.");
     }
 }
 
