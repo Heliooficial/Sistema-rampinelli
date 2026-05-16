@@ -9,40 +9,53 @@ let clienteNovo = false;
 let motoristaNovo = false;
 
 // ==========================================================================
-// 1. CARREGA OS DADOS DA PLANILHA VIA JSONP (BULA O BLOQUEIO DE CORS)
+// 1. CARREGA OS DADOS DA PLANILHA VIA FETCH MODERNO (RESISTENTE A ERROS)
 // ==========================================================================
-
-// Função global que o Google vai chamar de volta entregando os dados
-window.processarDadosIniciais = function(dados) {
-    bancoClientes = dados.clientes || [];
-    bancoMotoristas = dados.motoristas || [];
-    
+async function carregarDadosIniciais() {
     const campoTermo = document.getElementById('num_termo');
-    if (campoTermo) {
-        campoTermo.value = dados.proximoTermo;
-        campoTermo.placeholder = ""; 
+    
+    try {
+        // Faz a requisição moderna direto para o link do Google Apps Script com a ação correta
+        const resposta = await fetch(`${WEB_APP_URL}?action=dadosIniciais`);
+        
+        if (!resposta.ok) {
+            throw new Error(`Erro do servidor Google: ${resposta.status}`);
+        }
+
+        const dados = await resposta.json();
+
+        if (dados) {
+            bancoClientes = dados.clientes || [];
+            bancoMotoristas = dados.motoristas || [];
+            
+            // Insere o número do próximo termo (ex: 2026-276) na tela
+            if (campoTermo && dados.proximoTermo) {
+                campoTermo.value = dados.proximoTermo;
+                campoTermo.placeholder = ""; 
+            }
+            console.log("Dados carregados com sucesso da planilha!");
+        }
+
+    } catch (erro) {
+        console.error("Erro detalhado ao conectar:", erro);
+        alert("⚠️ Não foi possível carregar os dados automaticamente. Mas o campo foi liberado para você digitar o número manualmente!");
+        if (campoTermo) {
+            campoTermo.value = ""; // Libera o campo para digitação caso o Google falhe
+            campoTermo.placeholder = "Ex: 2026-276";
+        }
     }
-    console.log("Dados carregados com sucesso via JSONP!");
-};
+}
 
 window.addEventListener('DOMContentLoaded', () => {
     // Alerta de confirmação após o recarregamento da página
     if (localStorage.getItem('termoImpresso')) {
         const ultimoTermo = localStorage.getItem('termoImpresso');
-        alert(`✅ Termo nº ${ultimoTermo} gerado com sucesso!\nA planilha foi updated e o sistema já preparou o próximo número.`);
+        alert(`✅ Termo nº ${ultimoTermo} gerado com sucesso!\nA planilha foi atualizada e o sistema já preparou o próximo número.`);
         localStorage.removeItem('termoImpresso');
     }
 
-    // Criamos uma chamada de script dinâmica que o navegador não bloqueia por CORS
-    const script = document.createElement('script');
-    script.src = `${WEB_APP_URL}?action=dadosIniciais&callback=processarDadosIniciais`;
-    
-    script.onerror = function() {
-        console.error("Erro ao conectar com a planilha.");
-        alert("Não foi possível carregar os dados automaticamente. Verifique se a planilha e o Apps Script estão publicados.");
-    };
-
-    document.body.appendChild(script);
+    // Dispara a carga dos dados assim que a tela abre
+    carregarDadosIniciais();
 });
 
 // ==========================================================================
@@ -86,7 +99,7 @@ function buscarMotorista() {
 // 4. ENVIA OS DADOS PARA A PLANILHA E DISPARA A IMPRESSÃO
 // ==========================================================================
 document.getElementById('btnPrint').addEventListener('click', async function() {
-    const numTermo = document.getElementById('num_termo').value.trim(); // Mantém o formato text/hífen
+    const numTermo = document.getElementById('num_termo').value.trim(); 
     const ordem = document.getElementById('ordem').value.trim();
     const cnpj = document.getElementById('cliente_cnpj').value.trim();
     const cliente = document.getElementById('cliente').value.trim();
@@ -103,7 +116,6 @@ document.getElementById('btnPrint').addEventListener('click', async function() {
 
     const cnpjFinal = cnpj || "Não Informado";
 
-    // Envia o termo atual para o Google saber como fatiar e somar o próximo
     const dadosParaSalvar = {
         action: "salvarEAtualizar",
         termoAtual: numTermo, 
@@ -119,7 +131,7 @@ document.getElementById('btnPrint').addEventListener('click', async function() {
     try {
         localStorage.setItem('termoImpresso', numTermo);
 
-        // Envia para o Sheets
+        // Envia para o Sheets de forma assíncrona
         fetch(WEB_APP_URL, {
             method: 'POST',
             mode: 'no-cors', 
