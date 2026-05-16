@@ -10,7 +10,7 @@
 
 .sidebar-menu {
     width: 250px;
-    background: #222;
+    background: #b60303;
     padding: 20px 0;
 }
 
@@ -25,8 +25,8 @@
 }
 
 .sidebar-menu a:hover, .sidebar-menu a.active {
-    background: #333;
-    border-left-color: #333; 
+    background: #720202;
+    border-left-color: #b30505; 
 }
 
 .sidebar-menu i { 
@@ -43,7 +43,7 @@
     background: #fff;
     padding: 30px;
     border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 10px rgba(255, 0, 0, 0.05);
     max-width: 700px;
 }
 
@@ -79,7 +79,7 @@
 }
 
 .btn-print {
-    background: #222; 
+    background: #3b67f6; 
     color: white;
     padding: 12px 25px;
     border: none;
