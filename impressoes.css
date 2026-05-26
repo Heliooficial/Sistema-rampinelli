@@ -3,60 +3,74 @@
    ========================================================================== */
 .impressoes-container {
     display: flex;
-    margin-top: 80px; 
-    min-height: calc(100vh - 80px);
-    font-family: Arial, sans-serif;
+    margin-top: 7rem; /* Altura exata do cabeçalho fixo */
+    min-height: calc(100vh - 7rem);
 }
 
+/* Barra Lateral Estilizada conforme o padrão administrativo */
 .sidebar-menu {
-    width: 250px;
-    background: #b60303;
-    padding: 20px 0;
+    width: 26rem;
+    background: #ffffff;
+    padding: 2.5rem 0;
+    border-right: .1rem solid #e5e7eb;
 }
 
 .sidebar-menu a {
-    display: block;
-    padding: 15px 20px;
-    color: #fff;
-    text-decoration: none;
-    font-size: 16px;
-    border-left: 4px solid transparent;
-    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    padding: 1.4rem 2.5rem;
+    color: #4b5563;
+    font-size: 1.5rem;
+    font-weight: 600;
+    border-left: .4rem solid transparent;
 }
 
-.sidebar-menu a:hover, .sidebar-menu a.active {
-    background: #720202;
-    border-left-color: #b30505; 
+.sidebar-menu a i {
+    font-size: 1.8rem;
+    width: 2.5rem;
+    text-align: center;
 }
 
-.sidebar-menu i { 
-    margin-right: 10px; 
+.sidebar-menu a:hover {
+    color: #c70808;
+    background: #fef2f2;
 }
 
+.sidebar-menu a.active {
+    background: #fef2f2;
+    color: #c70808;
+    border-left-color: #c70808;
+}
+
+/* Área de Conteúdo Interno */
 .form-content {
     flex: 1;
-    padding: 40px;
-    background: #f4f6f9;
+    padding: 4rem;
+    background: #f3f4f6; /* Fundo cinza para destacar o formulário */
 }
 
 .form-box {
     background: #fff;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(255, 0, 0, 0.05);
-    max-width: 700px;
+    padding: 3.5rem;
+    border-radius: .8rem;
+    box-shadow: 0 .2rem 0.5rem rgba(0,0,0,0.05);
+    max-width: 750px;
+    border: .1rem solid #e5e7eb;
 }
 
 .form-box h2 { 
-    margin-bottom: 20px; 
-    color: #333; 
+    font-size: 2.4rem;
+    margin-bottom: 2.5rem; 
+    color: #111827; 
+    font-weight: 700;
 }
 
 .grid-inputs {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin-bottom: 20px;
+    gap: 2rem;
+    margin-bottom: 2.5rem;
 }
 
 .input-block { 
@@ -65,31 +79,48 @@
 }
 
 .input-block label { 
-    font-size: 14px; 
-    font-weight: bold; 
-    margin-bottom: 5px; 
-    color: #555; 
+    font-size: 1.4rem; 
+    font-weight: 600; 
+    margin-bottom: .8rem; 
+    color: #374151; 
 }
 
 .input-block input { 
-    padding: 10px; 
-    border: 1px solid #ccc; 
-    border-radius: 4px; 
-    font-size: 15px; 
+    padding: 1.2rem; 
+    border: .1rem solid #cbd5e1; 
+    border-radius: .6rem; 
+    font-size: 1.5rem; 
+    color: #333;
+    background-color: #fff;
 }
 
+.input-block input:focus {
+    border-color: #c70808;
+    box-shadow: 0 0 0 .3rem rgba(199, 8, 8, 0.1);
+}
+
+/* Botão Principal de Impressão */
 .btn-print {
-    background: #3b67f6; 
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    background: #16a34a; /* Verde sucesso operacional */
     color: white;
-    padding: 12px 25px;
-    border: none;
-    border-radius: 4px;
+    padding: 1.4rem 3rem;
+    border-radius: .6rem;
     cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
+    font-size: 1.6rem;
+    font-weight: 600;
+    width: auto;
 }
 
-/* Oculta a área do documento na visualização do monitor */
+.btn-print:hover {
+    background: #15803d;
+    box-shadow: 0 .4rem 1.2rem rgba(22, 163, 74, 0.25);
+}
+
+/* Oculta a área de montagem do documento físico no monitor */
 #print-area { 
     display: none; 
 }
@@ -98,12 +129,11 @@
    REGRAS ESPECÍFICAS PARA A FOLHA DE IMPRESSÃO (GERAÇÃO DO PDF)
    ========================================================================== */
 @media print {
-    /* Esconde elementos do site que não devem sair no papel */
+    /* Esconde absolutamente todos os elementos visuais do sistema */
     .header, .impressoes-container, .sidebar-menu, .form-content, form, button, #menu-btn { 
         display: none !important; 
     }
     
-    /* Prepara o plano de fundo da folha */
     body, html {
         background: #ffffff !important;
         color: #000000 !important;
@@ -112,7 +142,6 @@
         padding: 0 !important;
     }
 
-    /* Torna a área do PDF totalmente visível e sobreposta */
     #print-area { 
         display: block !important; 
         visibility: visible !important;
@@ -124,16 +153,14 @@
         padding: 0 !important;
     }
 
-    /* Configuração oficial do tamanho A4 da folha */
     @page { 
         size: A4 portrait; 
         margin: 0; 
     }
 
-    /* Cada recibo (via) ocupa exatamente metade da folha (48% para segurança de margem) */
     .recibo-via {
         height: 48vh; 
-        padding: 35px;
+        padding: 3.5rem;
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
@@ -141,40 +168,38 @@
         page-break-inside: avoid;
     }
 
-    /* Linha tracejada onde o papel será cortado ao meio */
     .recibo-via.primeira-via {
-        border-bottom: 2px dashed #000000 !important;
+        border-bottom: .2rem dashed #000000 !important;
     }
 
-    /* Cabeçalho do documento impresso */
     .recibo-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        border-bottom: 1px solid #000;
-        padding-bottom: 10px;
+        border-bottom: .1rem solid #000;
+        padding-bottom: 1rem;
     }
     
     .recibo-logo { 
-        max-height: 35px; 
+        max-height: 3.5rem; 
         filter: grayscale(100%); 
     } 
     
     .empresa-dados { 
         text-align: right; 
-        font-size: 10px; 
+        font-size: 1rem; 
         line-height: 1.2; 
     }
     
     .recibo-title { 
         text-align: center; 
-        font-size: 15px; 
+        font-size: 1.5rem; 
         font-weight: bold; 
-        margin: 15px 0; 
+        margin: 1.5rem 0; 
     }
     
     .recibo-body { 
-        font-size: 13px; 
+        font-size: 1.3rem; 
         line-height: 1.6; 
         text-align: justify; 
     }
@@ -182,20 +207,20 @@
     .recibo-footer-assinaturas {
         display: flex;
         justify-content: space-between;
-        margin-top: 25px;
+        margin-top: 2.5rem;
     }
     
     .campo-assinatura {
         width: 45%;
         text-align: center;
-        border-top: 1px solid #000;
-        padding-top: 5px;
-        font-size: 12px;
+        border-top: .1rem solid #000;
+        padding-top: .5rem;
+        font-size: 1.2rem;
     }
     
     .via-tag { 
         text-align: right; 
-        font-size: 9px; 
+        font-size: .9rem; 
         font-style: italic; 
     }
 }
