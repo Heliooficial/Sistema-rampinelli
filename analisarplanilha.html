@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Rampinelli - Analisar Planilhas</title> 
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    
+    <link rel="icon" type="image/png" href="img/logo-rampinelli.png">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+    <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
+    <link rel='stylesheet' type='text/css' href='analisarplanilha.css'>
+    
+    <!-- Mudamos aqui: Link direto via CDN segura e livre de bloqueios -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+
+<body>
+
+    <header class="header">
+        <a href="index.html" class="logo">
+            <img src="img/logo-rampinelli.png" alt="Logo Rampinelli">
+        </a>
+
+        <div id="menu-btn" class="fas fa-bars"></div>
+
+        <nav class="navbar">
+            <a href="index.html"><i class="fas fa-chart-pie"></i> Painel Inicial</a>
+            <a href="impressoes.html"><i class="fas fa-print"></i> Impressões</a>
+            <a href="analisarplanilha.html" class="active"><i class="fas fa-chart-bar"></i> Analisar Planilhas</a>
+            <a href="index.html#comparador"><i class="fas fa-balance-scale"></i> Comparar Dados</a>
+            <a href="login.html" class="btn-logout">Sair <i class="fas fa-sign-out-alt"></i></a>
+        </nav>
+    </header>
+
+    <div class="analise-container">
+        
+        <aside class="sidebar-menu">
+            <a class="active" data-modulo="cargas-paletizadas"><i class="fas fa-pallet"></i> Cargas Paletizadas</a>
+            <a class="" data-modulo="controle-estoque"><i class="fas fa-boxes"></i> Controle de Estoque</a>
+            <a class="" data-modulo="trocas-devolucoes"><i class="fas fa-exchange-alt"></i> Trocas e Devoluções</a>
+        </aside>
+
+        <main class="form-content">
+            
+            <div class="form-box-sistema modulo-form active-modulo" id="modulo-cargas-paletizadas">
+                <h2>Análise e Programação de Cargas Paletizadas</h2>
+                <form id="formPaletizadas">
+                    <div class="card-filtro-local">
+                        <div class="grid-inputs-local">
+                            <div class="input-block-local">
+                                <label>Carregar Planilha de Programação:</label>
+                                <input type="file" id="inputExcelPaletizadas" accept=".xlsx, .xls">
+                            </div>
+                            <div class="input-block-local acoes-filtro-flex">
+                                <button type="button" class="btn-sistema-local btn-verde-local" id="btnFiltrarPaletizados">
+                                    <i class="fas fa-filter"></i> Filtrar Paletizados
+                                </button>
+                                <button type="button" class="btn-sistema-local btn-cinza-local" id="btnResetarPaletizados">
+                                    <i class="fas fa-undo"></i> Mostrar Todos
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="resultadoPaletizadas" style="display: none;">
+                        <div class="secao-acoes-tabela">
+                            <h3><i class="fas fa-th-list"></i> Cargas Processadas</h3>
+                            <div class="grupo-botoes-tabela">
+                                <button type="button" class="btn-sistema-local btn-azul-local" id="btnPrintResumido"><i class="fas fa-list"></i> Resumido</button>
+                                <button type="button" class="btn-sistema-local btn-roxo-local" id="btnPrintDetalhado"><i class="fas fa-print"></i> Detalhado</button>
+                                <button type="button" class="btn-sistema-local btn-verde-local" id="btnExportarExcelAjustado"><i class="fas fa-file-excel"></i> Exportar Novo .xlsx</button>
+                            </div>
+                        </div>
+
+                        <div class="table-container-local">
+                            <table class="table-sistema-local" id="tabelaPaletizadas">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 90px;">Lote</th>
+                                        <th style="width: 80px;">Frete</th>
+                                        <th style="width: 115px;">Data Prog.</th>
+                                        <th>Cliente</th>
+                                        <th>Produtos Ativos</th>
+                                        <th style="width: 240px;">Observações Internas (Editável)</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="form-box-sistema modulo-form" id="modulo-controle-estoque">
+                <h2>Módulo: Controle de Estoque Operacional</h2>
+                <p class="subtitulo-modulo">Importe a planilha de fechamento de saldos de estoque para auditoria de volumes de sacarias, chapas e pallets na unidade.</p>
+                <form id="formEstoque">
+                    <div class="grid-inputs-local">
+                        <div class="input-block-local">
+                            <label>Selecionar Planilha de Estoque físico/lógico:</label>
+                            <input type="file" accept=".xlsx, .xls">
+                        </div>
+                        <div class="input-block-local">
+                            <label>Mês de Referência:</label>
+                            <select class="select-sistema-local">
+                                <option>Selecione...</option>
+                                <option>Janeiro / 2026</option>
+                                <option>Fevereiro / 2026</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-sistema-local btn-verde-local btn-bloco-local" onclick="alert('Módulo em desenvolvimento técnico.')">Processar Balanço de Estoque <i class="fas fa-boxes"></i></button>
+                </form>
+            </div>
+
+            <div class="form-box-sistema modulo-form" id="modulo-trocas-devolucoes">
+                <h2>Módulo: Gestão de Trocas e Devoluções</h2>
+                <p class="subtitulo-modulo">Cruze relatórios de devoluções comerciais para identificar reentrada de mercadorias defeituosas, avarias ou inversões de lote.</p>
+                <form id="formTrocas">
+                    <div class="grid-inputs-local">
+                        <div class="input-block-local">
+                            <label>Planilha de Ocorrências (SAC/Logística):</label>
+                            <input type="file" accept=".xlsx, .xls">
+                        </div>
+                        <div class="input-block-local">
+                            <label>Filtrar por Categoria de Falha:</label>
+                            <select class="select-sistema-local">
+                                <option>Todas</option>
+                                <option>Avaria de Transporte</option>
+                                <option>Inversão de Produto</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-sistema-local btn-azul-local btn-bloco-local" onclick="alert('Módulo em desenvolvimento técnico.')">Auditar Divergências de Devolução <i class="fas fa-search"></i></button>
+                </form>
+            </div>
+
+        </main>
+    </div>
+
+    <div id="print-area"></div>
+
+    <script src="analisarplanilha.js"></script>
+</body>
+</html>
